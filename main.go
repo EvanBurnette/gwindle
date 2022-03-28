@@ -1,7 +1,9 @@
 package main
 
 import (
+	"fmt"
 	"os"
+	"sort"
 	"strings"
 )
 
@@ -21,6 +23,7 @@ func main() {
 		letterCount := make(map[string]int)
 		add := true
 		letters := strings.Split(word, "")
+		sort.Strings(letters)
 		for _, letter := range letters {
 			letterCount[letter] += 1
 			if letterCount[letter] > 1 {
@@ -29,8 +32,10 @@ func main() {
 			}
 		}
 		if add {
-			filtFives = append(filtFives, word)
+			filtFives = append(filtFives, strings.Join(letters, ""))
 		}
 	}
+	sort.Strings(filtFives)
+	fmt.Println(strings.Join(filtFives, "\n"))
 	//remove anagrams
 }
