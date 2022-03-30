@@ -5,6 +5,7 @@ import (
 	"os"
 	"sort"
 	"strings"
+	// "reflect"
 )
 
 func check(e error) {
@@ -47,7 +48,7 @@ func main() {
 		}
 		anagrams[key] = append(anagrams[key], word)
 	}
-	fmt.Println(strings.Join(nograms, "\n"))
+	// fmt.Println(strings.Join(nograms, "\n"))
 
 	//create solution channel
 	c := make(chan string)
@@ -63,6 +64,26 @@ func main() {
 	}
 }
 
-func combineAndTest(i int, word string, list []string, c chan string) {
-	c <- word
+func combineAndTest(i int, iword string, list []string, c chan string) {
+	for j, jword := range list[i:len(list)-1] {
+		if strings.ContainsAny(iword, jword) {
+			continue
+		} 
+		for k, kword := range list[j:len(list)-1] {
+			if strings.ContainsAny(iword + jword, kword) {
+				continue
+			}
+			for l, lword := range list[k:len(list)-1] {
+				if strings.ContainsAny(iword + jword + kword, lword) {
+					continue
+				}
+				for _, mword := range list[l:len(list)-1] {
+					if strings.ContainsAny(iword + jword + kword + lword, mword) {
+						continue
+					}
+					c <- iword + jword + kword + lword + mword
+				}
+			}	
+		}
+	}
 }
