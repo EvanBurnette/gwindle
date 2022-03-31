@@ -6,6 +6,7 @@ import (
 	"sort"
 	"strings"
 	"sync"
+	"time"
 )
 
 func check(e error) {
@@ -45,7 +46,7 @@ func main() {
 		key := strings.Join(sorted, "")
 		if anagrams[key] != true {
 			nograms = append(nograms, word)
-			anagrams[key] = true;
+			anagrams[key] = true
 		}
 	}
 	fmt.Println(len(nograms))
@@ -59,33 +60,38 @@ func main() {
 	//create and test combinations for each word in list
 	for i, iword := range nograms[:len(nograms)-4] {
 		wg.Add(1)
-		go func () {
+		go func() {
 			defer wg.Done()
-			for _, jword := range nograms[i+1:len(nograms)-3] {
+			for _, jword := range nograms[i+1 : len(nograms)-3] {
 				if strings.ContainsAny(iword, jword) {
 					continue
-				} 
-				for _, kword := range nograms[i+2:len(nograms)-2] {
-					if strings.ContainsAny(iword + jword, kword) {
+				}
+				for _, kword := range nograms[i+2 : len(nograms)-2] {
+					if strings.ContainsAny(iword+jword, kword) {
 						continue
 					}
-					for _, lword := range nograms[i+3:len(nograms)-1] {
-						if strings.ContainsAny(iword + jword + kword, lword) {
+					for _, lword := range nograms[i+3 : len(nograms)-1] {
+						if strings.ContainsAny(iword+jword+kword, lword) {
 							continue
 						}
 						for _, mword := range nograms[i+4:] {
-							if strings.ContainsAny(iword + jword + kword + lword, mword) {
+							if strings.ContainsAny(iword+jword+kword+lword, mword) {
 								continue
 							}
 							c <- iword + " " + jword + " " + kword + " " + lword + " " + mword
 						}
-					}	
+					}
 				}
 			}
 		}()
 	}
-	v := <- c
+	go func() {
+		for {
+			v := <- c
+			fmt.Println(v)
+		}
+	}()
 	wg.Wait()
+	time.Sleep(time.Millisecond * 100)
 	close(c)
-	fmt.Println(v)
 }
