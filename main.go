@@ -5,9 +5,7 @@ import (
 	"os"
 	"sort"
 	"strings"
-
-	// "reflect"
-	"strconv"
+	"sync"
 )
 
 func check(e error) {
@@ -17,7 +15,7 @@ func check(e error) {
 }
 
 func main() {
-	dat, err := os.ReadFile("fives.csv")
+	dat, err := os.ReadFile("test.csv")
 	check(err)
 	words := strings.Split(strings.Trim(string(dat), "\n"), "\n")
 	fmt.Println(len(words))
@@ -55,38 +53,39 @@ func main() {
 	//create solution channel
 	c := make(chan string)
 
+	//create waitgroup
+	var wg sync.WaitGroup
+
 	//create and test combinations for each word in list
-	for i, word := range nograms[:len(nograms)-4] {
-		go combineAndTest(i, word, nograms, c)
-	}
-
-	for {
-		v := <- c
-		fmt.Println(v)
-	}
-}
-
-func combineAndTest(i int, iword string, list []string, c chan string) {
-	for _, jword := range list[i+1:len(list)-3] {
-		if strings.ContainsAny(iword, jword) {
-			continue
-		} 
-		for _, kword := range list[i+2:len(list)-2] {
-			if strings.ContainsAny(iword + jword, kword) {
-				continue
-			}
-			for _, lword := range list[i+3:len(list)-1] {
-				if strings.ContainsAny(iword + jword + kword, lword) {
+	for i, iword := range nograms[:len(nograms)-4] {
+		wg.Add(1)
+		go func () {
+			defer wg.Done()
+			for _, jword := range nograms[i+1:len(nograms)-3] {
+				if strings.ContainsAny(iword, jword) {
 					continue
-				}
-				for _, mword := range list[i+4:] {
-					if strings.ContainsAny(iword + jword + kword + lword, mword) {
+				} 
+				for _, kword := range nograms[i+2:len(nograms)-2] {
+					if strings.ContainsAny(iword + jword, kword) {
 						continue
 					}
-					c <- iword + " " + jword + " " + kword + " " + lword + " " + mword
+					for _, lword := range nograms[i+3:len(nograms)-1] {
+						if strings.ContainsAny(iword + jword + kword, lword) {
+							continue
+						}
+						for _, mword := range nograms[i+4:] {
+							if strings.ContainsAny(iword + jword + kword + lword, mword) {
+								continue
+							}
+							c <- iword + " " + jword + " " + kword + " " + lword + " " + mword
+						}
+					}	
 				}
-			}	
-		}
+			}
+		}()
 	}
-	c <- "finished " + strconv.Itoa(i) //TODO change this to a count channel to tell the main channel to close when all goroutines are done
+	v := <- c
+	wg.Wait()
+	close(c)
+	fmt.Println(v)
 }
