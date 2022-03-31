@@ -88,5 +88,5 @@ func combineAndTest(i int, iword string, list []string, c chan string) {
 			}	
 		}
 	}
-	c <- "finished " + strconv.Itoa(i)
+	c <- "finished " + strconv.Itoa(i) //TODO change this to a count channel to tell the main channel to close when all goroutines are done
 }
