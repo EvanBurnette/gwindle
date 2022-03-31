@@ -15,7 +15,7 @@ func check(e error) {
 }
 
 func main() {
-	dat, err := os.ReadFile("fives.csv")
+	dat, err := os.ReadFile("test.csv")
 	check(err)
 	words := strings.Split(strings.Trim(string(dat), "\n"), "\n")
 	var filtFives []string
@@ -35,7 +35,7 @@ func main() {
 		}
 	}
 
-	//anagrams
+	//remove anagrams
 	anagrams := make(map[string][]string)
 	var nograms []string
 	for _, word := range filtFives {
@@ -48,13 +48,13 @@ func main() {
 		}
 		anagrams[key] = append(anagrams[key], word)
 	}
-	// fmt.Println(strings.Join(nograms, "\n"))
+	fmt.Println(strings.Join(nograms, "\n"))
 
 	//create solution channel
 	c := make(chan string)
 
 	//create and test combinations for each word in list
-	for i, word := range nograms {
+	for i, word := range nograms[:len(nograms)] {
 		go combineAndTest(i, word, nograms, c)
 	}
 
@@ -65,25 +65,26 @@ func main() {
 }
 
 func combineAndTest(i int, iword string, list []string, c chan string) {
-	for j, jword := range list[i:len(list)-1] {
+	for _, jword := range list[i+1:len(list)-3] {
 		if strings.ContainsAny(iword, jword) {
 			continue
 		} 
-		for k, kword := range list[j:len(list)-1] {
+		for _, kword := range list[i+2:len(list)-2] {
 			if strings.ContainsAny(iword + jword, kword) {
 				continue
 			}
-			for l, lword := range list[k:len(list)-1] {
+			for _, lword := range list[i+3:len(list)-1] {
 				if strings.ContainsAny(iword + jword + kword, lword) {
 					continue
 				}
-				for _, mword := range list[l:len(list)-1] {
+				for _, mword := range list[i+4:] {
 					if strings.ContainsAny(iword + jword + kword + lword, mword) {
 						continue
 					}
-					c <- iword + jword + kword + lword + mword
+					c <- iword + " " + jword + " " + kword + " " + lword + " " + mword
 				}
 			}	
 		}
 	}
+	c <- "finished " + string(i)
 }
