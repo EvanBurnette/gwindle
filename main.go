@@ -5,7 +5,9 @@ import (
 	"os"
 	"sort"
 	"strings"
+
 	// "reflect"
+	"strconv"
 )
 
 func check(e error) {
@@ -15,9 +17,10 @@ func check(e error) {
 }
 
 func main() {
-	dat, err := os.ReadFile("test.csv")
+	dat, err := os.ReadFile("fives.csv")
 	check(err)
 	words := strings.Split(strings.Trim(string(dat), "\n"), "\n")
+	fmt.Println(len(words))
 	var filtFives []string
 	//filter out words with duplicate letters
 	for _, word := range words {
@@ -36,25 +39,24 @@ func main() {
 	}
 
 	//remove anagrams
-	anagrams := make(map[string][]string)
+	anagrams := make(map[string]bool)
 	var nograms []string
 	for _, word := range filtFives {
 		sorted := strings.Split(word, "")
-		sort.Strings(sorted) //sort package sorts in place and has no return value
+		sort.Strings(sorted) //package "sort" sorts in place and has no return value
 		key := strings.Join(sorted, "")
-		_, hasKey := anagrams[key]
-		if hasKey {
+		if anagrams[key] != true {
 			nograms = append(nograms, word)
+			anagrams[key] = true;
 		}
-		anagrams[key] = append(anagrams[key], word)
 	}
-	fmt.Println(strings.Join(nograms, "\n"))
+	fmt.Println(len(nograms))
 
 	//create solution channel
 	c := make(chan string)
 
 	//create and test combinations for each word in list
-	for i, word := range nograms[:len(nograms)] {
+	for i, word := range nograms[:len(nograms)-4] {
 		go combineAndTest(i, word, nograms, c)
 	}
 
@@ -86,5 +88,5 @@ func combineAndTest(i int, iword string, list []string, c chan string) {
 			}	
 		}
 	}
-	c <- "finished " + string(i)
+	c <- "finished " + strconv.Itoa(i)
 }
