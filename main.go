@@ -19,7 +19,7 @@ func main() {
 	dat, err := os.ReadFile("test.csv")
 	check(err)
 	words := strings.Split(strings.Trim(string(dat), "\n"), "\n")
-	fmt.Println(len(words))
+
 	var filtFives []string
 	//filter out words with duplicate letters
 	for _, word := range words {
@@ -38,17 +38,21 @@ func main() {
 	}
 
 	//remove anagrams
-	anagrams := make(map[string]bool)
 	var nograms []string
-	for _, word := range filtFives {
-		sorted := strings.Split(word, "")
-		sort.Strings(sorted) //package "sort" sorts in place and has no return value
-		key := strings.Join(sorted, "")
-		if anagrams[key] != true {
-			nograms = append(nograms, word)
-			anagrams[key] = true
+	func() {
+		anagrams := make(map[string]bool)
+		for _, word := range filtFives {
+			sorted := strings.Split(word, "")
+			sort.Strings(sorted) //package "sort" sorts in place and has no return value
+			key := strings.Join(sorted, "")
+			if anagrams[key] != true {
+				nograms = append(nograms, word)
+				anagrams[key] = true
+			}
 		}
-	}
+ 	}()
+	//sanity check for test set that all values are still present
+	fmt.Println(len(words))
 	fmt.Println(len(nograms))
 
 	//create solution channel
@@ -58,6 +62,8 @@ func main() {
 	var wg sync.WaitGroup
 
 	//create and test combinations for each word in list
+	//TODO fix the repetition here (reduce to recursive calls?)
+	//This section causes so many off by one errors and is hard to refactor
 	for i, iword := range nograms[:len(nograms)-4] {
 		wg.Add(1)
 		go func() {
@@ -87,7 +93,7 @@ func main() {
 	}
 	go func() {
 		for {
-			v := <- c
+			v := <-c
 			fmt.Println(v)
 		}
 	}()
