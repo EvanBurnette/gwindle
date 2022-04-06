@@ -50,7 +50,7 @@ func main() {
 				anagrams[key] = true
 			}
 		}
- 	}()
+	}()
 	//sanity check for test set that all values are still present
 	fmt.Println(len(words))
 	fmt.Println(len(nograms))
@@ -62,12 +62,12 @@ func main() {
 	var wg sync.WaitGroup
 
 	//create and test combinations for almost every word in list
-	lpEnd := len(nograms)-3
+	lpEnd := len(nograms) - 3
 	for i, word := range nograms[:lpEnd] {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-				combineTest(i, word, lpEnd, nograms, ch)
+			combineTest(i, word, lpEnd, nograms, ch)
 		}()
 	}
 
@@ -85,7 +85,7 @@ func main() {
 func combineTest(i int, phrase string, lpEnd int, nograms []string, ch chan string) {
 	//for each word in list[i+1:listLen-5-phraselen]
 	j := i + 1
-	for _, word := range nograms[j:lpEnd+1] {
+	for _, word := range nograms[j : lpEnd+1] {
 		//if word contains any letters of phrase
 		if strings.ContainsAny(phrase, word) {
 			continue
@@ -94,7 +94,7 @@ func combineTest(i int, phrase string, lpEnd int, nograms []string, ch chan stri
 			ch <- phrase + " " + word
 			//add word to phrase and send to channel
 		} else {
-			combineTest(j, phrase + " " + word, lpEnd+1, nograms, ch)
+			combineTest(j, phrase+" "+word, lpEnd+1, nograms, ch)
 			//add word to phrase and send it to combine and test
 		}
 	}
