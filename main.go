@@ -62,13 +62,13 @@ func main() {
 	var wg sync.WaitGroup
 
 	//create and test combinations for almost every word in list
-	lpEnd := len(nograms) - 3
+	lpEnd := len(nograms) - 3 //stop before the nth to last word
 	for i, word := range nograms[:lpEnd] {
 		wg.Add(1)
-		go func() {
+		go func(i int, word string) {
 			defer wg.Done()
 			combineTest(i, word, lpEnd, nograms, ch)
-		}()
+		}(i, word)
 	}
 
 	go func() {
@@ -93,6 +93,7 @@ func combineTest(i int, phrase string, lpEnd int, nograms []string, ch chan stri
 		if lpEnd >= len(nograms) {
 			ch <- phrase + " " + word
 			//add word to phrase and send to channel
+			continue
 		} else {
 			combineTest(j, phrase+" "+word, lpEnd+1, nograms, ch)
 			//add word to phrase and send it to combine and test
