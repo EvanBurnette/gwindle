@@ -16,7 +16,7 @@ func check(e error) {
 }
 
 func main() {
-	dat, err := os.ReadFile("test.csv")
+	dat, err := os.ReadFile("fives.csv")
 	check(err)
 	words := strings.Split(strings.Trim(string(dat), "\n"), "\n")
 
@@ -56,48 +56,46 @@ func main() {
 	fmt.Println(len(nograms))
 
 	//create solution channel
-	c := make(chan string)
+	ch := make(chan string)
 
 	//create waitgroup
 	var wg sync.WaitGroup
 
-	//create and test combinations for each word in list
-	//TODO fix the repetition here (reduce to recursive calls?)
-	//This section causes so many off by one errors and is hard to refactor
-	for i, iword := range nograms[:len(nograms)-4] {
+	//create and test combinations for almost every word in list
+	lpEnd := len(nograms)-3
+	for i, word := range nograms[:lpEnd] {
 		wg.Add(1)
 		go func() {
 			defer wg.Done()
-			for _, jword := range nograms[i+1 : len(nograms)-3] {
-				if strings.ContainsAny(iword, jword) {
-					continue
-				}
-				for _, kword := range nograms[i+2 : len(nograms)-2] {
-					if strings.ContainsAny(iword+jword, kword) {
-						continue
-					}
-					for _, lword := range nograms[i+3 : len(nograms)-1] {
-						if strings.ContainsAny(iword+jword+kword, lword) {
-							continue
-						}
-						for _, mword := range nograms[i+4:] {
-							if strings.ContainsAny(iword+jword+kword+lword, mword) {
-								continue
-							}
-							c <- iword + " " + jword + " " + kword + " " + lword + " " + mword
-						}
-					}
-				}
-			}
+				combineTest(i, word, lpEnd, nograms, ch)
 		}()
 	}
+
 	go func() {
 		for {
-			v := <-c
+			v := <-ch
 			fmt.Println(v)
 		}
 	}()
 	wg.Wait()
-	time.Sleep(time.Millisecond * 100)
-	close(c)
+	time.Sleep(time.Millisecond * 1500) //Adding time for sync is hacky?
+	close(ch)
+}
+
+func combineTest(i int, phrase string, lpEnd int, nograms []string, ch chan string) {
+	//for each word in list[i+1:listLen-5-phraselen]
+	j := i + 1
+	for _, word := range nograms[j:lpEnd+1] {
+		//if word contains any letters of phrase
+		if strings.ContainsAny(phrase, word) {
+			continue
+		}
+		if lpEnd >= len(nograms) {
+			ch <- phrase + " " + word
+			//add word to phrase and send to channel
+		} else {
+			combineTest(j, phrase + " " + word, lpEnd+1, nograms, ch)
+			//add word to phrase and send it to combine and test
+		}
+	}
 }
