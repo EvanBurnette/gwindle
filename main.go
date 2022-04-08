@@ -16,7 +16,7 @@ func check(e error) {
 }
 
 func main() {
-	dat, err := os.ReadFile("fives.csv")
+	dat, err := os.ReadFile("10kusa.txt")
 	check(err)
 	words := strings.Split(strings.Trim(string(dat), "\n"), "\n")
 
@@ -52,8 +52,8 @@ func main() {
 		}
 	}()
 	//sanity check for test set that all values are still present
-	fmt.Println(len(words))
-	fmt.Println(len(nograms))
+	// fmt.Println(len(words))
+	// fmt.Println(len(nograms))
 
 	//create solution channel
 	ch := make(chan string)
@@ -62,7 +62,7 @@ func main() {
 	var wg sync.WaitGroup
 
 	//create and test combinations for almost every word in list
-	lpEnd := len(nograms) - 3 //stop before the nth to last word
+	lpEnd := len(nograms) - 4 //stop before the nth to last word
 	for i, word := range nograms[:lpEnd] {
 		wg.Add(1)
 		go func(i int, word string) {
